@@ -1,0 +1,34 @@
+{
+    "name": "ciliatus/ciliatus",
+    "type": "project",
+    "require": {
+        "php": ">=7.4",
+        "laravel/framework": "^7.0",
+        "laravel/airlock": "^1.0",
+        "laravel/ui": "^2.0",
+        "matthenning/eloquent-api-filter": "^1.4.2",
+        "myclabs/php-enum": "^1.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ciliatus\\Api\\": "src/Api/",
+            "Ciliatus\\Automation\\": "src/Automation/",
+            "Ciliatus\\Common\\": "src/Common/",
+            "Ciliatus\\Core\\": "src/Core/",
+            "Ciliatus\\Monitoring\\": "src/Monitoring/",
+            "Ciliatus\\Web\\": "src/Web/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Ciliatus\\Api\\CiliatusApiServiceProvider",
+                "Ciliatus\\Automation\\CiliatusAutomationServiceProvider",
+                "Ciliatus\\Common\\CiliatusCommonServiceProvider",
+                "Ciliatus\\Core\\CiliatusCoreServiceProvider",
+                "Ciliatus\\Monitoring\\CiliatusMonitoringServiceProvider",
+                "Ciliatus\\Web\\CiliatusWebServiceProvider"
+            ]
+        }
+    }
+}
