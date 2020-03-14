@@ -36,8 +36,8 @@ trait HasMonitorTrait
          * Collect logical sensor readings
          */
         $monitor_values = [];
-        $this->physical_sensors->each(function(PhysicalSensor $physical_sensor) {
-            $physical_sensor->logical_sensors->each(function(LogicalSensor $logical_sensor) {
+        $this->physical_sensors->each(function(PhysicalSensor $physical_sensor) use (&$monitor_values) {
+            $physical_sensor->logical_sensors->each(function(LogicalSensor $logical_sensor) use (&$monitor_values) {
                 if (!isset($monitor_values[$logical_sensor->type->id])) {
                     $monitor_values[$logical_sensor->type->id] = [];
                 }
@@ -59,7 +59,7 @@ trait HasMonitorTrait
         /*
          * Delete properties of no longer existing reading types
          */
-        $this->getProperties(PropertyTypesEnum::MONITORING_MONITOR_VALUE())->each(function (Property $p) use ($monitor_values) {
+        $this->getProperties(PropertyTypesEnum::MONITORING_MONITOR_VALUE())->each(function (Property $p) use (&$monitor_values) {
             if (!in_array($p->name, array_keys($monitor_values))) {
                 $p->delete();
             }
@@ -126,6 +126,8 @@ trait HasMonitorTrait
      */
     public function renderMonitor(): void
     {
+        $this->_monitor = [];
+
         $this->getProperties(PropertyTypesEnum::MONITORING_MONITOR_VALUE())->each(function (Property $p) {
             $type = LogicalSensorType::where('id', (int)$p->name)->select([
                 'name', 'icon', 'reading_type_name', 'reading_type_unit', 'reading_type_symbol'
