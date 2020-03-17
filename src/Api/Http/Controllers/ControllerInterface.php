@@ -2,8 +2,8 @@
 
 namespace Ciliatus\Api\Http\Controllers;
 
+use Ciliatus\Api\Http\Requests\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 interface ControllerInterface
 {

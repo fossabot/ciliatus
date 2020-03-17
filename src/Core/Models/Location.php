@@ -44,13 +44,13 @@ class Location extends Model
     ];
 
     protected $with = [
-        'type'
+        'location_type'
     ];
 
     /**
      * @return BelongsTo
      */
-    public function type(): BelongsTo
+    public function location_type(): BelongsTo
     {
         return $this->belongsTo(LocationType::class, 'location_type_id');
     }

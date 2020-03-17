@@ -6,6 +6,7 @@ use Ciliatus\Api\Http\Transformers\GenericTransformer;
 use Ciliatus\Common\Enum\DatabaseDataTypesEnum;
 use Ciliatus\Common\Enum\PropertyTypesEnum;
 use Ciliatus\Common\Exceptions\InvalidPropertyDataTypeException;
+use Ciliatus\Common\Exceptions\MissingRequestFieldException;
 use Ciliatus\Common\Traits\HasHistoryTrait;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;

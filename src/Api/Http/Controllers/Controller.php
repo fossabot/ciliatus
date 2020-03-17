@@ -2,12 +2,13 @@
 
 namespace Ciliatus\Api\Http\Controllers;
 
+use Ciliatus\Api\Http\Controllers\Actions\StoreAction;
+use Ciliatus\Api\Http\Requests\Request;
 use Ciliatus\Common\Enum\HttpStatusCodeEnum;
 use Ciliatus\Common\Models\Model;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Matthenning\EloquentApiFilter\Traits\FiltersEloquentApi;
 
@@ -61,6 +62,18 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
         $query = $model_class_name::where('id', $id);
 
         return $this->respondFiltered($query);
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     * @throws \Ciliatus\Api\Exceptions\MissingRequestFieldException
+     */
+    public function _store(Request $request)
+    {
+        $model = StoreAction::prepare($request, $this->getModelName())->auto()->invoke();
+
+        return $this->respondWithModel($model);
     }
 
     /**

@@ -19,7 +19,7 @@ class HealthIndicator extends Model
     /**
      * @return BelongsTo
      */
-    public function type(): BelongsTo
+    public function health_indicator_type(): BelongsTo
     {
         return $this->belongsTo(HealthIndicatorType::class, 'health_indicator_type_id');
     }

@@ -25,7 +25,7 @@ class PhysicalSensor extends Model
      * @var array
      */
     protected $with = [
-        'type', 'logical_sensors'
+        'physical_sensor_type', 'logical_sensors'
     ];
 
     /**
@@ -49,7 +49,7 @@ class PhysicalSensor extends Model
     /**
      * @return BelongsTo
      */
-    public function type(): BelongsTo
+    public function physical_sensor_type(): BelongsTo
     {
         return $this->belongsTo(PhysicalSensorType::class, 'physical_sensor_type_id');
     }

@@ -28,13 +28,13 @@ class LogicalSensor extends Model
     ];
 
     protected $with = [
-        'type'
+        'logical_sensor_type'
     ];
 
     /**
      * @return BelongsTo
      */
-    public function type(): BelongsTo
+    public function logical_sensor_type(): BelongsTo
     {
         return $this->belongsTo(LogicalSensorType::class, 'logical_sensor_type_id');
     }

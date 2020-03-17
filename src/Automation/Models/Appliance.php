@@ -38,13 +38,13 @@ class Appliance extends Model
      * @var array
      */
     protected $with = [
-        'type', 'current_state'
+        'appliance_type', 'current_state'
     ];
 
     /**
      * @return BelongsTo
      */
-    public function type(): BelongsTo
+    public function appliance_type(): BelongsTo
     {
         return $this->belongsTo(ApplianceType::class, 'appliance_type_id');
     }
@@ -135,7 +135,7 @@ class Appliance extends Model
      */
     public function getIcon(): string
     {
-        return $this->type->icon;
+        return $this->appliance_type->icon;
     }
 
     /**

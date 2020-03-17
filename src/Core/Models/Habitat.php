@@ -51,7 +51,7 @@ class Habitat extends Model
     ];
 
     protected $with = [
-        'type'
+        'habitat_type'
     ];
 
     /**
@@ -70,7 +70,7 @@ class Habitat extends Model
     /**
      * @return BelongsTo
      */
-    public function type(): BelongsTo
+    public function habitat_type(): BelongsTo
     {
         return $this->belongsTo(HabitatType::class, 'habitat_type_id');
     }
