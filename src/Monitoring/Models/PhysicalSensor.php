@@ -4,6 +4,7 @@ namespace Ciliatus\Monitoring\Models;
 
 use Ciliatus\Common\Models\Model;
 use Ciliatus\Common\Traits\HasHealthIndicatorTrait;
+use Ciliatus\Core\Models\Habitat;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -44,6 +45,14 @@ class PhysicalSensor extends Model
     public function belongsToModel(): MorphTo
     {
         return $this->morphTo('belongsToModel', 'belongsToModel_type', 'belongsToModel_id');
+    }
+
+    /**
+     * @return MorphTo
+     */
+    public function habitats(): MorphTo
+    {
+        return $this->belongsToModel()->where('belongsToModel_type', Habitat::class);
     }
 
     /**

@@ -4,7 +4,9 @@ namespace Ciliatus\Automation\Models;
 
 use Ciliatus\Automation\Enum\ApplianceGroupStateEnum;
 use Ciliatus\Common\Models\Model;
+use Ciliatus\Core\Models\Habitat;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 class ApplianceGroup extends Model
 {
@@ -54,6 +56,18 @@ class ApplianceGroup extends Model
             'ciliatus_automation__appliance_group_capability_pivot',
             'appliance_group_id',
             'capability_id'
+        );
+    }
+
+    /**
+     * @return MorphToMany
+     */
+    public function habitats(): MorphToMany
+    {
+        return $this->morphedByMany(
+            Habitat::class,
+            'belongsToModel',
+            'ciliatus_automation__appliance_group_belongs_pivot'
         );
     }
 

@@ -10,6 +10,7 @@ class StoreHabitatRequest extends Request
         return [
             'name' => 'required|unique:ciliatus_core__habitats',
             'relations.habitat_type' => 'required',
+            'relations.location' => 'required',
             'relations.*' => ''
         ];
     }

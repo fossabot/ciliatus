@@ -2,6 +2,8 @@
 
 namespace Ciliatus\Api\Http\Controllers;
 
+use Ciliatus\Api\Exceptions\MissingRequestFieldException;
+use Ciliatus\Api\Exceptions\UnhandleableRelationshipException;
 use Ciliatus\Api\Http\Controllers\Actions\StoreAction;
 use Ciliatus\Api\Http\Requests\Request;
 use Ciliatus\Common\Enum\HttpStatusCodeEnum;
@@ -11,6 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 use Matthenning\EloquentApiFilter\Traits\FiltersEloquentApi;
+use ReflectionException;
 
 class Controller extends \App\Http\Controllers\Controller implements ControllerInterface
 {
@@ -66,14 +69,23 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
 
     /**
      * @param Request $request
+     * @param mixed $except
+     * @param callable $pre Function to execute before model creation. Parameters: Request $request
+     * @param callable $post Function to execute after model creation. Parameters: mixed $result_of_pre_function, Model $created_model, Request $request
      * @return JsonResponse
-     * @throws \Ciliatus\Api\Exceptions\MissingRequestFieldException
+     * @throws MissingRequestFieldException
+     * @throws UnhandleableRelationshipException
+     * @throws ReflectionException
      */
-    public function _store(Request $request)
+    public function _store(Request $request, $except = [], callable $pre = null, callable $post = null)
     {
-        $model = StoreAction::prepare($request, $this->getModelName())->auto()->invoke();
+        $pre_result = $pre ? $pre($request) : null;
 
-        return $this->respondWithModel($model);
+        $model = StoreAction::prepare($request,$this->getModelName())->except($except)->auto()->invoke();
+
+        if ($post) $post($pre_result, $model, $request);
+
+        return $this->respondWithModel($model->fresh());
     }
 
     /**

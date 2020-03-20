@@ -3,8 +3,15 @@
 namespace Ciliatus\Core\Http\Controllers;
 
 
+use Ciliatus\Api\Exceptions\MissingRequestFieldException;
+use Ciliatus\Api\Exceptions\UnhandleableRelationshipException;
+use Ciliatus\Automation\Models\Appliance;
+use Ciliatus\Core\Http\Requests\Request;
 use Ciliatus\Core\Http\Requests\StoreHabitatRequest;
+use Ciliatus\Core\Models\Habitat;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Collection;
+use ReflectionException;
 
 class HabitatController extends Controller
 {
@@ -12,11 +19,44 @@ class HabitatController extends Controller
     /**
      * @param StoreHabitatRequest $request
      * @return JsonResponse
-     * @throws \Ciliatus\Api\Exceptions\MissingRequestFieldException
+     * @throws MissingRequestFieldException
+     * @throws UnhandleableRelationshipException
+     * @throws ReflectionException
      */
     public function store(StoreHabitatRequest $request): JsonResponse
     {
-        return $this->_store($request);
+        /**
+         * Pulls appliances from request as they are not directly related,
+         * but need to be attached to the newly created built-in appliance group.
+         *
+         * @param StoreHabitatRequest $request
+         * @return array|Collection
+         */
+        $pre = function (StoreHabitatRequest $request) {
+            $appliances = new Collection();
+            $appliance_ids = collect($request->valid()->get('relations'))->get('appliances') ?? [];
+            foreach ($appliance_ids as $id) {
+                $appliances[] = Appliance::find($id);
+            }
+
+            return $appliances;
+        };
+
+        /**
+         * Attach appliances to the built-in appliance group.
+         *
+         * @param Collection $appliances
+         * @param Habitat $habitat
+         * @param Request $request
+         */
+        $post = function (Collection $appliances, Habitat $habitat, Request $request = null) {
+            $group = $habitat->appliance_groups()->where('is_builtin', true)->first();
+            foreach ($appliances as $appliance) {
+                $group->appliances()->attach($appliance);
+            }
+        };
+
+        return $this->_store($request, 'appliances', $pre, $post);
     }
 
 }

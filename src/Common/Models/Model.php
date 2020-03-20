@@ -69,6 +69,16 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements Mode
     /**
      * @return string
      */
+    public function entity(): string
+    {
+        $split = explode('__', $this->getTable());
+
+        return end($split);
+    }
+
+    /**
+     * @return string
+     */
     public function fk(): string
     {
         return strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $this->model())) . '_id';
@@ -79,7 +89,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements Mode
      */
     public function self(): string
     {
-        return url('api/v1/' . $this->table . '/' . $this->id);
+        return url('api/v1/' . strtolower($this->package()) . '/' . $this->entity() . '/' . $this->id);
     }
 
     /**
