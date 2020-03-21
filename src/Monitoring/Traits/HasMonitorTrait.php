@@ -11,6 +11,8 @@ use Ciliatus\Common\Models\Setting;
 use Ciliatus\Monitoring\Models\LogicalSensor;
 use Ciliatus\Monitoring\Models\LogicalSensorType;
 use Ciliatus\Monitoring\Models\PhysicalSensor;
+use DemeterChain\C;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -124,6 +126,18 @@ trait HasMonitorTrait
     /**
      *
      */
+    public function enrichMonitor(): void
+    {
+        if ($cache = Cache::get($this->monitorCacheKey())) {
+            $this->_monitor = $cache;
+        } else {
+            $this->renderMonitor();
+        }
+    }
+
+    /**
+     *
+     */
     public function renderMonitor(): void
     {
         $this->_monitor = [];
@@ -143,6 +157,24 @@ trait HasMonitorTrait
                 'last_refresh_diff_minutes' => $p->created_at->diffInMinutes(Carbon::now())
             ];
         });
+
+        Cache::put($this->monitorCacheKey(), $this->_monitor, $this->monitorCacheTtl());
+    }
+
+    /**
+     * @return string
+     */
+    protected function monitorCacheKey(): string
+    {
+        return sprintf('Ciliatus.%s.%s.%s.Monitor', $this->package(), $this->model(), $this->id);
+    }
+
+    /**
+     * @return int
+     */
+    protected function monitorCacheTtl(): int
+    {
+        return env(sprintf('CILIATUS_%s_%s_MONITOR_TTL', $this->package(), $this->model()), 120);
     }
 
     /**
