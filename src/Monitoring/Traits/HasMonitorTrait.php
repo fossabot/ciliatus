@@ -38,11 +38,11 @@ trait HasMonitorTrait
         $monitor_values = [];
         $this->physical_sensors->each(function(PhysicalSensor $physical_sensor) use (&$monitor_values) {
             $physical_sensor->logical_sensors->each(function(LogicalSensor $logical_sensor) use (&$monitor_values) {
-                if (!isset($monitor_values[$logical_sensor->type->id])) {
-                    $monitor_values[$logical_sensor->type->id] = [];
+                if (!isset($monitor_values[$logical_sensor->logical_sensor_type->id])) {
+                    $monitor_values[$logical_sensor->logical_sensor_type->id] = [];
                 }
 
-                $monitor_values[$logical_sensor->type->id][] = $logical_sensor->current_reading_corrected;
+                $monitor_values[$logical_sensor->logical_sensor_type->id][] = $logical_sensor->current_reading_corrected;
             });
         });
 

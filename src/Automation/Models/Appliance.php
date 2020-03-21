@@ -96,7 +96,7 @@ class Appliance extends Model
             return $this->error(trans('ciliatus.automation::appliance.state_text.error.null_state'));
         }
 
-        if (!$this->type->states->map(function ($s) { return $s->id; })->contains($state->id)) {
+        if (!$this->appliance_type->states->map(function ($s) { return $s->id; })->contains($state->id)) {
             return $this->error(trans('ciliatus.automation::appliance.state_text.error.invalid_state'));
         }
 

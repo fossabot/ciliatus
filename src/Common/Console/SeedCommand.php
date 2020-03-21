@@ -159,7 +159,7 @@ class SeedCommand extends Command
                         'maintenance_interval_days' => random_int(30, 180)
                     ]);
 
-                    $appliance->setState($appliance->type->states[random_int(0, $appliance->type->states->count() - 1)])->save();
+                    $appliance->setState($appliance->appliance_type->states[random_int(0, $appliance->appliance_type->states->count() - 1)])->save();
                     $appliances[] = $appliance;
                 }
             });
@@ -173,7 +173,7 @@ class SeedCommand extends Command
                 $offset += random_int(0, 10);
                 $workflow->actions()->create([
                     'name' => 'Activate ' . $appliances[$i]->name,
-                    'appliance_type_state_id' => $appliances[$i]->type->states[0]->id,
+                    'appliance_type_state_id' => $appliances[$i]->appliance_type->states[0]->id,
                     'appliance_id' => $appliances[$i]->id,
                     'workflow_time_offset_seconds' => $offset,
                     'target_level' => random_int(10, 30),
@@ -185,7 +185,7 @@ class SeedCommand extends Command
             $workflow->actions->each(function(WorkflowAction $action) use ($workflow, $offset) {
                 $workflow->actions()->create([
                     'name' => 'Deactivate ' . $action->appliance->name,
-                    'appliance_type_state_id' => $action->appliance->type->states[1]->id,
+                    'appliance_type_state_id' => $action->appliance->appliance_type->states[1]->id,
                     'appliance_id' => $action->appliance->id,
                     'workflow_time_offset_seconds' => $offset,
                     'target_level' => 0,

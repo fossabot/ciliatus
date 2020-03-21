@@ -18,7 +18,7 @@ class SetupCommand extends Command
     {
         if (!$this->option('db-only')) {
             echo '# Setting up authentication provider ...' . PHP_EOL;
-            Artisan::call('vendor:publish --provider="Laravel\Airlock\AirlockServiceProvider"');
+            Artisan::call('vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"');
             Artisan::call('ui vue --auth');
         }
 
