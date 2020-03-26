@@ -4,8 +4,10 @@ namespace Ciliatus\Automation;
 
 use Ciliatus\Automation\Observers\HabitatObserver;
 use Ciliatus\Automation\Console\CalculateMaintenanceCommand;
+use Ciliatus\Common\Models\User;
 use Ciliatus\Core\Models\Habitat;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class CiliatusAutomationServiceProvider extends ServiceProvider
@@ -18,6 +20,7 @@ class CiliatusAutomationServiceProvider extends ServiceProvider
         $this->observe();
         $this->providers();
         $this->schedule();
+        $this->authorize();
     }
 
     private function load()
@@ -56,6 +59,21 @@ class CiliatusAutomationServiceProvider extends ServiceProvider
                 $schedule->command(CalculateMaintenanceCommand::class)->dailyAt('06:00');
             });
         }
+    }
+
+    private function authorize()
+    {
+        Gate::define('read-automation', function (User $user) {
+            return $user->hasPermission('automation', 'read');
+        });
+
+        Gate::define('write-automation', function (User $user) {
+            return $user->hasPermission('automation', 'write');
+        });
+
+        Gate::define('admin-automation', function (User $user) {
+            return $user->hasPermission('automation', 'admin');
+        });
     }
 
 }

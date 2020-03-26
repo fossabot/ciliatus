@@ -2,13 +2,12 @@
 
 namespace Ciliatus\Monitoring\Http\Controllers;
 
-
-use App\Http\Requests\BatchIngestRequest;
-use App\Http\Requests\IngestRequest;
 use Carbon\Carbon;
 use Ciliatus\Common\Enum\HttpStatusCodeEnum;
+use Ciliatus\Common\Exceptions\ModelNotFoundException;
 use Ciliatus\Common\Factory;
-use Ciliatus\Monitoring\Exceptions\ModelNotFoundException;
+use Ciliatus\Monitoring\Http\Requests\BatchIngestRequest;
+use Ciliatus\Monitoring\Http\Requests\IngestRequest;
 use Ciliatus\Monitoring\Models\LogicalSensor;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -21,11 +20,14 @@ class IngestController extends Controller
      * @return JsonResponse
      * @throws ModelNotFoundException
      */
-    public function ingest(IngestRequest $request): JsonResponse
+    public function ingest__store(IngestRequest $request): JsonResponse
     {
-        $logical_sensor = Factory::findOrFail(LogicalSensor::class,  $request->valid()->get('logical_sensor_id'));
+        $logical_sensor = Factory::findOrFail(LogicalSensor::class, $request->valid()->get('logical_sensor_id'));
 
-        $reading = $logical_sensor->addReading($request->valid()->get('raw_value'), Carbon::parse('read_at'));
+        $reading = $logical_sensor->addReading(
+            $request->valid()->get('raw_value'),
+            Carbon::parse($request->valid()->get('read_at'))
+        );
 
         return $this->respondWithModel($reading);
     }
@@ -36,7 +38,7 @@ class IngestController extends Controller
      * @throws ModelNotFoundException
      * @throws Exception
      */
-    public function batch_ingest(BatchIngestRequest $request): JsonResponse
+    public function batch_ingest__store(BatchIngestRequest $request): JsonResponse
     {
         $logical_sensor = Factory::findOrFail(LogicalSensor::class,  $request->valid()->get('logical_sensor_id'));
 

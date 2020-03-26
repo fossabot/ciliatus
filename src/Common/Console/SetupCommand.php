@@ -2,6 +2,7 @@
 
 namespace Ciliatus\Common\Console;
 
+use Ciliatus\Common\Enum\PermissionEnum;
 use Ciliatus\Common\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
@@ -74,12 +75,21 @@ class SetupCommand extends Command
             'password' => bcrypt($password)
         ];
 
-        User::create($user);
+        /** @var User $superadmin */
+        $superadmin = User::create($user);
+        $superadmin->syncPermissions([
+            'Api' => [ PermissionEnum::PERMISSION_READ(), PermissionEnum::PERMISSION_WRITE(), PermissionEnum::PERMISSION_ADMIN() ],
+            'Automation' => [ PermissionEnum::PERMISSION_READ(), PermissionEnum::PERMISSION_WRITE(), PermissionEnum::PERMISSION_ADMIN() ],
+            'Common' => [ PermissionEnum::PERMISSION_READ(), PermissionEnum::PERMISSION_WRITE(), PermissionEnum::PERMISSION_ADMIN() ],
+            'Core' => [ PermissionEnum::PERMISSION_READ(), PermissionEnum::PERMISSION_WRITE(), PermissionEnum::PERMISSION_ADMIN() ],
+            'Monitoring' => [ PermissionEnum::PERMISSION_READ(), PermissionEnum::PERMISSION_WRITE(), PermissionEnum::PERMISSION_ADMIN() ]
+        ]);
 
         echo "################################" . PHP_EOL;
         echo "######### Initial User #########" . PHP_EOL;
         echo "# Username: " . $user['email'] . " #" . PHP_EOL;
         echo "# Password: " . $password . " #########" . PHP_EOL;
+        echo "# Token: " . $superadmin->createToken('test')->plainTextToken . PHP_EOL;
         echo "################################" . PHP_EOL;
 
         echo "Setup done" . PHP_EOL;

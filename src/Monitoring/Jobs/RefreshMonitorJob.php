@@ -31,6 +31,7 @@ class RefreshMonitorJob implements ShouldQueue
      */
     public function handle()
     {
+        $this->model->fresh();
         $this->model->refreshMonitor();
     }
 }

@@ -44,25 +44,25 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements Mode
      */
     public function __construct(array $attributes = [])
     {
-        $this->table = 'ciliatus_' . strtolower($this->package()) . '__' . $this->getTable();
+        $this->table = 'ciliatus_' . strtolower($this::package()) . '__' . $this->getTable();
         parent::__construct($attributes);
     }
 
     /**
      * @return mixed
      */
-    public function model(): string
+    public static function model(): string
     {
-        $class = explode('\\', get_class($this));
+        $class = explode('\\', static::class);
         return end($class);
     }
 
     /**
      * @return string
      */
-    public function package(): string
+    public static function package(): string
     {
-        $class = explode('\\', get_class($this));
+        $class = explode('\\', static::class);
         return $class[count($class)-3];
     }
 
@@ -81,7 +81,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements Mode
      */
     public function fk(): string
     {
-        return strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $this->model())) . '_id';
+        return strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $this::model())) . '_id';
     }
 
     /**
@@ -89,7 +89,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements Mode
      */
     public function self(): string
     {
-        return url('api/v1/' . strtolower($this->package()) . '/' . $this->entity() . '/' . $this->id);
+        return url('api/v1/' . strtolower($this::package()) . '/' . $this->entity() . '/' . $this->id);
     }
 
     /**
@@ -126,8 +126,6 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements Mode
         return array_filter($transformable, function ($t) use ($ignore) {
             return !in_array($t, $ignore);
         });
-
-        return $transformable;
     }
 
     /**

@@ -9,5 +9,5 @@ class Controller extends \Ciliatus\Api\Http\Controllers\Controller
     /**
      * @var string
      */
-    protected string $module = 'Core';
+    protected string $package = 'Core';
 }

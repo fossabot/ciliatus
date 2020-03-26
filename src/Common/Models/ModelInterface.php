@@ -11,8 +11,10 @@ interface ModelInterface
 
     public function fk(): string;
 
-    public function model(): string;
+    public static function model(): string;
 
-    public function getIcon(): string;
+    public static function package(): string;
+
+    public  function getIcon(): string;
 
 }

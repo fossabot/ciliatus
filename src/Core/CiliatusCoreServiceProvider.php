@@ -2,10 +2,12 @@
 
 namespace Ciliatus\Core;
 
+use Ciliatus\Common\Models\User;
 use Ciliatus\Core\Console\RefreshMonitorCacheCommand;
 use Ciliatus\Core\Models\Animal;
 use Ciliatus\Core\Observers\AnimalObserver;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class CiliatusCoreServiceProvider extends ServiceProvider
@@ -17,6 +19,7 @@ class CiliatusCoreServiceProvider extends ServiceProvider
         $this->load();
         $this->observe();
         $this->schedule();
+        $this->authorize();
     }
 
     private function load()
@@ -50,6 +53,21 @@ class CiliatusCoreServiceProvider extends ServiceProvider
     private function observe()
     {
         Animal::observe(AnimalObserver::class);
+    }
+
+    private function authorize()
+    {
+        Gate::define('read-core', function (User $user) {
+            return $user->hasPermission('core', 'read');
+        });
+
+        Gate::define('write-core', function (User $user) {
+            return $user->hasPermission('core', 'write');
+        });
+
+        Gate::define('admin-core', function (User $user) {
+            return $user->hasPermission('core', 'admin');
+        });
     }
 
 }

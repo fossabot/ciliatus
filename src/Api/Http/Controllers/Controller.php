@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 use Matthenning\EloquentApiFilter\Traits\FiltersEloquentApi;
+use ReflectionClass;
 use ReflectionException;
 
 class Controller extends \App\Http\Controllers\Controller implements ControllerInterface
@@ -33,7 +34,7 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
     /**
      * @var string
      */
-    protected string $module = 'Api';
+    protected string $package = 'Api';
 
     /**
      * Controller constructor.
@@ -49,8 +50,16 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
      */
     public function index(): JsonResponse
     {
+        if (!$this->request->allows()) {
+            return $this->respondUnauthorized();
+        }
+
         $model_class_name = $this->getModelName();
         $query = $model_class_name::query();
+
+        if ($this->request->has('all')) {
+            return $this->respondWithModels($query->get());
+        }
 
         return $this->respondFilteredAndPaginated($query);
     }
@@ -61,6 +70,10 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
      */
     public function show(int $id): JsonResponse
     {
+        if (!$this->request->allows()) {
+            return $this->respondUnauthorized();
+        }
+
         $model_class_name = $this->getModelName();
         $query = $model_class_name::where('id', $id);
 
@@ -79,9 +92,13 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
      */
     public function _store(Request $request, $except = [], callable $pre = null, callable $post = null)
     {
+        if (!$this->request->allows()) {
+            return $this->respondUnauthorized();
+        }
+
         $pre_result = $pre ? $pre($request) : null;
 
-        $model = StoreAction::prepare($request,$this->getModelName())->except($except)->auto()->invoke();
+        $model = StoreAction::prepare($request, $this->getModelName())->except($except)->auto()->invoke();
 
         if ($post) $post($pre_result, $model, $request);
 
@@ -282,7 +299,7 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
      */
     public function respondUnauthorized(string $message = 'Unauthorized'): JsonResponse
     {
-        return $this->respondWithError($message, HttpStatusCodeEnum::Unauthorized());
+        return $this->respondWithError($message, HttpStatusCodeEnum::Forbidden());
     }
 
     /**
@@ -341,6 +358,24 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
             )
         );
 
-        return 'Ciliatus\\' . $this->module . '\\Models\\' . $class_name;
+        return 'Ciliatus\\' . $this->package . '\\Models\\' . $class_name;
+    }
+
+    /**
+     * @return array
+     * @throws ReflectionException
+     */
+    public static function customActions(): array
+    {
+        $mapping = [];
+        $reflection = new ReflectionClass(get_called_class());
+        foreach ($reflection->getMethods() as $method) {
+            if (count($split = explode('__', $method->getName())) == 2) {
+                if (strlen($split[0]) < 1 ) continue;
+                $mapping[$split[0]] = $split[1];
+            }
+        }
+
+        return $mapping;
     }
 }

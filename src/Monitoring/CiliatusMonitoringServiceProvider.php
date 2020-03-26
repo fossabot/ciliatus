@@ -2,6 +2,8 @@
 
 namespace Ciliatus\Monitoring;
 
+use Ciliatus\Common\Models\User;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class CiliatusMonitoringServiceProvider extends ServiceProvider
@@ -11,6 +13,7 @@ class CiliatusMonitoringServiceProvider extends ServiceProvider
     {
         $this->publish();
         $this->load();
+        $this->authorize();
     }
 
     private function load()
@@ -25,6 +28,21 @@ class CiliatusMonitoringServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/config.php' => config_path('ciliatus_monitoring.php')
         ]);
+    }
+
+    private function authorize()
+    {
+        Gate::define('read-monitoring', function (User $user) {
+            return $user->hasPermission('monitoring', 'read');
+        });
+
+        Gate::define('write-monitoring', function (User $user) {
+            return $user->hasPermission('monitoring', 'write');
+        });
+
+        Gate::define('admin-monitoring', function (User $user) {
+            return $user->hasPermission('monitoring', 'admin');
+        });
     }
 
 }

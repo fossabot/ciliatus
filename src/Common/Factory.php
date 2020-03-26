@@ -11,15 +11,16 @@ class Factory
     /**
      * @param string $class
      * @param int $id
+     * @param array $with
      * @return Model
      * @throws ModelNotFoundException
      */
-    public static function findOrFail(string $class, int $id): Model
+    public static function findOrFail(string $class, int $id, array $with = []): Model
     {
         try {
-            return $class::findOrFail($id);
+            return $class::with($with)->findOrFail($id);
         } catch (Illuminate\Database\Eloquent\ModelNotFoundException $ex) {
-            throw new ModelNotFoundException('LogicalSensor', $id);
+            throw new ModelNotFoundException($class, $id);
         }
     }
 

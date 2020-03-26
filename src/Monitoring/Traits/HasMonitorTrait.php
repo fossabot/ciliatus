@@ -3,6 +3,7 @@
 namespace Ciliatus\Monitoring\Traits;
 
 use Carbon\Carbon;
+use Ciliatus\Api\Exceptions\Exception;
 use Ciliatus\Common\Enum\DatabaseDataTypesEnum;
 use Ciliatus\Common\Enum\PropertyTypesEnum;
 use Ciliatus\Common\Models\Model;
@@ -166,7 +167,7 @@ trait HasMonitorTrait
      */
     protected function monitorCacheKey(): string
     {
-        return sprintf('Ciliatus.%s.%s.%s.Monitor', $this->package(), $this->model(), $this->id);
+        return sprintf('Ciliatus.%s.%s.%s.Monitor', $this::package(), $this::model(), $this->id);
     }
 
     /**
@@ -174,7 +175,7 @@ trait HasMonitorTrait
      */
     protected function monitorCacheTtl(): int
     {
-        return env(sprintf('CILIATUS_%s_%s_MONITOR_TTL', $this->package(), $this->model()), 120);
+        return env(sprintf('CILIATUS_%s_%s_MONITOR_TTL', $this::package(), $this::model()), 120);
     }
 
     /**

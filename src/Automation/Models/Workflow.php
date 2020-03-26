@@ -165,7 +165,7 @@ class Workflow extends Model
     public function start(Model $caller = null): bool
     {
         if (!$this->isReadyToStart()) {
-            if (!is_null($caller)) $params = [$caller->model(), $caller->id];
+            if (!is_null($caller)) $params = [$caller::model(), $caller->id];
             else $params = ['manual'];
 
             $this->writeHistory(WorkflowHistoryEventsEnum::WORKFLOW_START_NOTREADY(), $params);

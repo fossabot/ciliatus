@@ -20,7 +20,7 @@ class GenericTransformer extends Transformer
        $arr = [
            'id' => (int)$model->id, //@TODO: Fix for SQLite
            '_icon' => $model->getIcon(),
-           '_model' => $model->model(),
+           '_model' => $model::model(),
            '_entity' => $model->entity(),
            '_fk' => $model->fk(),
            '_self' => $model->self(),

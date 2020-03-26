@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Route;
 
 $controller_namespace = 'Ciliatus\Automation\Http\Controllers';
 
-Route::prefix('api/v1/automation')->group(function () use ($controller_namespace) {
+Route::middleware('api')->prefix('api/v1/automation')->group(function () use ($controller_namespace) {
     Route::resource('appliances', ApplianceController::class);
     Route::resource('appliance_groups', ApplianceGroupController::class);
     Route::resource('controlunits', ControlunitController::class);
