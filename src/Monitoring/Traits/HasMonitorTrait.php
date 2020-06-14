@@ -159,6 +159,8 @@ trait HasMonitorTrait
             ];
         });
 
+        if (count($this->_monitor) < 1) $this->_monitor = null;
+
         Cache::put($this->monitorCacheKey(), $this->_monitor, $this->monitorCacheTtl());
     }
 

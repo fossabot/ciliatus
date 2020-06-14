@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreatePermissionsKeyConstraints extends Migration
+class CreateUserSettingsKeyConstraints extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class CreatePermissionsKeyConstraints extends Migration
      */
     public function up()
     {
-        Schema::table('ciliatus_common__permissions', function (Blueprint $table) {
-            $table->foreign('user_id', 'permissions__user_id_foreign')
+        Schema::table('ciliatus_common__user_settings', function (Blueprint $table) {
+            $table->foreign('user_id', 'user_settings__user_id_foreign')
                 ->references('id')
                 ->on('ciliatus_common__users');
         });
@@ -27,8 +27,8 @@ class CreatePermissionsKeyConstraints extends Migration
      */
     public function down()
     {
-        Schema::table('ciliatus_common__permissions', function (Blueprint $table) {
-            $table->dropForeign('permissions__user_id_foreign');
+        Schema::table('ciliatus_common__user_settings', function (Blueprint $table) {
+            $table->dropForeign('user_settings__user_id_foreign');
         });
     }
 }

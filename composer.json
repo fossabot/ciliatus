@@ -4,7 +4,7 @@
     "require": {
         "php": ">=7.4",
         "laravel/framework": "^7.0",
-        "laravel/sanctum": "^2.0",
+        "laravel/sanctum": "^2.4",
         "laravel/ui": "^2.0",
         "matthenning/eloquent-api-filter": "^1.5",
         "myclabs/php-enum": "^1.7"

@@ -96,12 +96,18 @@ class Request extends FormRequest implements RequestInterface
         ];
     }
 
+    /**
+     * @return string
+     */
     protected function gate(): string
     {
         list($package, $model, $action) = $this->getRouteInfo();
         return $this->permissionMapping()[$action] . '-' . strtolower($package);
     }
 
+    /**
+     * @return bool
+     */
     public function allows(): bool
     {
         return Gate::allows($this->gate());

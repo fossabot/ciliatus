@@ -140,6 +140,8 @@ class UpdateAction extends Action
                 case 'HasMany':
                 case 'MorphOne':
                 case 'MorphMany':
+                    // Retrieve all models we need to "detach" and unset their foreign key
+                    // @TODO: There has to be a better method than this :/
                     $related_ids = $this->model->$name()->select('id')->get();
                     if (!is_a($related_ids, Collection::class)) $related_ids = collect($related_ids);
                     $ids_to_remove = $related_ids->filter(fn($r) => !in_array($r->id, $ids))->pluck('id');

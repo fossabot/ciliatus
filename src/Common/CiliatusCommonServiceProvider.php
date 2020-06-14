@@ -24,6 +24,7 @@ class CiliatusCommonServiceProvider extends ServiceProvider
 
     private function load()
     {
+        $this->loadRoutesFrom(__DIR__ . '/Http/routes.php');
         $this->loadMigrationsFrom(__DIR__ . '/Database/migrations');
     }
 

@@ -2,25 +2,58 @@
 
 namespace Ciliatus\Common\Models;
 
+use Illuminate\Auth\Authenticatable;
+use Illuminate\Auth\MustVerifyEmail;
+use Illuminate\Auth\Passwords\CanResetPassword;
+use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends \App\User
+class User extends Model implements
+    AuthenticatableContract,
+    AuthorizableContract,
+    CanResetPasswordContract
 {
+    use Authenticatable, Authorizable, CanResetPassword, MustVerifyEmail;
     use HasApiTokens, Notifiable;
 
     /**
-     * @return array
+     * @var string
      */
-    public function transform(): array
+    protected $table = 'users';
+
+    /**
+     * @var array
+     */
+    protected $fillable = [
+        'name', 'email', 'password',
+    ];
+
+    /**
+     * @var array
+     */
+    protected ?array $transformable = [
+        'name', 'email'
+    ];
+
+    /**
+     * @var array
+     */
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+    ];
+
+    /**
+     * @return HasMany
+     */
+    public function settings(): HasMany
     {
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'email' => $this->email
-        ];
+        return $this->hasMany(UserSetting::class);
     }
 
     /**
@@ -88,5 +121,13 @@ class User extends \App\User
         }
 
         return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getIcon(): string
+    {
+        return 'mdi-user';
     }
 }
