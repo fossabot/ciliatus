@@ -5,6 +5,7 @@ namespace Ciliatus\Api\Http\Controllers;
 use Ciliatus\Api\Exceptions\MissingRequestFieldException;
 use Ciliatus\Api\Exceptions\UnhandleableRelationshipException;
 use Ciliatus\Api\Http\Controllers\Actions\StoreAction;
+use Ciliatus\Api\Http\Controllers\Actions\UpdateAction;
 use Ciliatus\Api\Http\Requests\Request;
 use Ciliatus\Common\Enum\HttpStatusCodeEnum;
 use Ciliatus\Common\Models\Model;
@@ -82,7 +83,7 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
 
     /**
      * @param Request $request
-     * @param mixed $except
+     * @param $except
      * @param callable $pre Function to execute before model creation. Parameters: Request $request
      * @param callable $post Function to execute after model creation. Parameters: mixed $result_of_pre_function, Model $created_model, Request $request
      * @return JsonResponse
@@ -90,7 +91,7 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
      * @throws UnhandleableRelationshipException
      * @throws ReflectionException
      */
-    public function _store(Request $request, $except = [], callable $pre = null, callable $post = null)
+    public function _store(Request $request, $except = [], callable $pre = null, callable $post = null): JsonResponse
     {
         if (!$this->request->allows()) {
             return $this->respondUnauthorized();
@@ -99,6 +100,32 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
         $pre_result = $pre ? $pre($request) : null;
 
         $model = StoreAction::prepare($request, $this->getModelName())->except($except)->auto()->invoke();
+
+        if ($post) $post($pre_result, $model, $request);
+
+        return $this->respondWithModel($model->fresh());
+    }
+
+    /**
+     * @param Request $request
+     * @param int $id
+     * @param $except
+     * @param callable|null $pre
+     * @param callable|null $post
+     * @return JsonResponse
+     * @throws MissingRequestFieldException
+     * @throws ReflectionException
+     * @throws UnhandleableRelationshipException
+     */
+    public function _update(Request $request, int $id, $except = [], callable $pre = null, callable $post = null): JsonResponse
+    {
+        if (!$this->request->allows()) {
+            return $this->respondUnauthorized();
+        }
+
+        $pre_result = $pre ? $pre($request) : null;
+
+        $model = UpdateAction::prepare($request, $this->getModelName(), $id)->except($except)->auto()->invoke();
 
         if ($post) $post($pre_result, $model, $request);
 

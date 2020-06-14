@@ -2,6 +2,7 @@
 
 namespace Ciliatus\Core\Models;
 
+use Ciliatus\Automation\Models\ApplianceGroup;
 use Ciliatus\Automation\Traits\HasAppliancesTrait;
 use Ciliatus\Common\Models\Model;
 use Ciliatus\Monitoring\Traits\HasMonitorTrait;
@@ -50,6 +51,9 @@ class Habitat extends Model
         'last_monitor_refresh_at'
     ];
 
+    /**
+     * @var array
+     */
     protected $with = [
         'habitat_type'
     ];

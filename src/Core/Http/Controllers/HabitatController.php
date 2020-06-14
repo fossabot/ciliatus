@@ -8,6 +8,7 @@ use Ciliatus\Api\Exceptions\UnhandleableRelationshipException;
 use Ciliatus\Automation\Models\Appliance;
 use Ciliatus\Core\Http\Requests\Request;
 use Ciliatus\Core\Http\Requests\StoreHabitatRequest;
+use Ciliatus\Core\Http\Requests\UpdateHabitatRequest;
 use Ciliatus\Core\Models\Habitat;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
@@ -57,6 +58,50 @@ class HabitatController extends Controller
         };
 
         return $this->_store($request, 'appliances', $pre, $post);
+    }
+
+    /**
+     * @param UpdateHabitatRequest $request
+     * @param int $id
+     * @return JsonResponse
+     * @throws MissingRequestFieldException
+     * @throws ReflectionException
+     * @throws UnhandleableRelationshipException
+     */
+    public function update(UpdateHabitatRequest $request, int $id): JsonResponse
+    {
+        /**
+         * Pulls appliances from request as they are not directly related,
+         * but need to be attached to the newly created built-in appliance group.
+         *
+         * @param UpdateHabitatRequest $request
+         * @return array|Collection
+         */
+        $pre = function (UpdateHabitatRequest $request) {
+            $appliances = new Collection();
+            $appliance_ids = collect($request->valid()->get('relations'))->get('appliances') ?? [];
+            foreach ($appliance_ids as $id) {
+                $appliances[] = Appliance::find($id);
+            }
+
+            return $appliances;
+        };
+
+        /**
+         * Attach appliances to the built-in appliance group.
+         *
+         * @param Collection $appliances
+         * @param Habitat $habitat
+         * @param Request $request
+         */
+        $post = function (Collection $appliances, Habitat $habitat, Request $request = null) {
+            $group = $habitat->builtinApplianceGroup();
+            foreach ($appliances as $appliance) {
+                $group->appliances()->attach($appliance);
+            }
+        };
+
+        return $this->_update($request, $id,'appliances', $pre, $post);
     }
 
 }

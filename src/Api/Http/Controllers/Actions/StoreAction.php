@@ -35,6 +35,17 @@ class StoreAction extends Action
     }
 
     /**
+     * @return Model
+     * @throws MissingRequestFieldException
+     * @throws ReflectionException
+     * @throws UnhandleableRelationshipException
+     */
+    public function __invoke()
+    {
+        return $this->invoke();
+    }
+
+    /**
      * @return $this
      * @throws MissingRequestFieldException
      */
