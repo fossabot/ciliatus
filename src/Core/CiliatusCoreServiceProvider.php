@@ -58,15 +58,15 @@ class CiliatusCoreServiceProvider extends ServiceProvider
     private function authorize()
     {
         Gate::define('read-core', function (User $user) {
-            return $user->hasPermission('core', 'read');
+            return $user->hasPermission('Core', 'read');
         });
 
         Gate::define('write-core', function (User $user) {
-            return $user->hasPermission('core', 'write');
+            return $user->hasPermission('Core', 'write');
         });
 
         Gate::define('admin-core', function (User $user) {
-            return $user->hasPermission('core', 'admin');
+            return $user->hasPermission('Core', 'admin');
         });
     }
 

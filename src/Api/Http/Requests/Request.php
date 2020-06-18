@@ -15,7 +15,7 @@ class Request extends FormRequest implements RequestInterface
      */
     public function authorize(): bool
     {
-        return true;
+        return Gate::allows($this->gate());
     }
 
     /**
@@ -74,7 +74,7 @@ class Request extends FormRequest implements RequestInterface
 
         $customAction = self::getController()::customActions();
         foreach ($customAction as $method=>$action) {
-            $this->permission_mapping[$method] = $this->permission_mapping[$action];
+            $permission_mapping[$method] = $permission_mapping[$action];
         }
 
         return $permission_mapping;
@@ -103,14 +103,6 @@ class Request extends FormRequest implements RequestInterface
     {
         list($package, $model, $action) = $this->getRouteInfo();
         return $this->permissionMapping()[$action] . '-' . strtolower($package);
-    }
-
-    /**
-     * @return bool
-     */
-    public function allows(): bool
-    {
-        return Gate::allows($this->gate());
     }
 
 }

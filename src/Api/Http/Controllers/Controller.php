@@ -51,10 +51,6 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
      */
     public function index(): JsonResponse
     {
-        if (!$this->request->allows()) {
-            return $this->respondUnauthorized();
-        }
-
         $model_class_name = $this->getModelName();
         $query = $model_class_name::query();
 
@@ -71,10 +67,6 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
      */
     public function show(int $id): JsonResponse
     {
-        if (!$this->request->allows()) {
-            return $this->respondUnauthorized();
-        }
-
         $model_class_name = $this->getModelName();
         $query = $model_class_name::where('id', $id);
 
@@ -93,10 +85,6 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
      */
     public function _store(Request $request, $except = [], callable $pre = null, callable $post = null): JsonResponse
     {
-        if (!$this->request->allows()) {
-            return $this->respondUnauthorized();
-        }
-
         $pre_result = $pre ? $pre($request) : null;
 
         $model = StoreAction::prepare($request, $this->getModelName())->except($except)->auto()->invoke();
@@ -119,10 +107,6 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
      */
     public function _update(Request $request, int $id, $except = [], callable $pre = null, callable $post = null): JsonResponse
     {
-        if (!$this->request->allows()) {
-            return $this->respondUnauthorized();
-        }
-
         $pre_result = $pre ? $pre($request) : null;
 
         $model = UpdateAction::prepare($request, $this->getModelName(), $id)->except($except)->auto()->invoke();
@@ -389,6 +373,9 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
     }
 
     /**
+     * Searches for controller methods with an action suffix
+     * like e.g. __store, __update and returns a permission mapping
+     *
      * @return array
      * @throws ReflectionException
      */
