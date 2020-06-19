@@ -9,10 +9,13 @@ use Ciliatus\Api\Http\Controllers\Actions\UpdateAction;
 use Ciliatus\Api\Http\Requests\Request;
 use Ciliatus\Common\Enum\HttpStatusCodeEnum;
 use Ciliatus\Common\Models\Model;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\Access\Response;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Route;
 use Matthenning\EloquentApiFilter\Traits\FiltersEloquentApi;
 use ReflectionClass;
 use ReflectionException;
@@ -28,7 +31,7 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
     protected Request $request;
 
     /**
-     * @var
+     * @var array
      */
     protected array $meta = [];
 
@@ -47,10 +50,23 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
     }
 
     /**
+     * @param array $arguments
+     * @return Response|void
+     * @throws AuthorizationException
+     */
+    public function auth($arguments = [])
+    {
+        $this->authorize($this->gate(), $arguments);
+    }
+
+    /**
      * @return JsonResponse
+     * @throws AuthorizationException
      */
     public function index(): JsonResponse
     {
+        $this->auth();
+
         $model_class_name = $this->getModelName();
         $query = $model_class_name::query();
 
@@ -64,9 +80,12 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
     /**
      * @param int $id
      * @return JsonResponse
+     * @throws AuthorizationException
      */
     public function show(int $id): JsonResponse
     {
+        $this->auth();
+
         $model_class_name = $this->getModelName();
         $query = $model_class_name::where('id', $id);
 
@@ -82,9 +101,12 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
      * @throws MissingRequestFieldException
      * @throws UnhandleableRelationshipException
      * @throws ReflectionException
+     * @throws AuthorizationException
      */
     public function _store(Request $request, $except = [], callable $pre = null, callable $post = null): JsonResponse
     {
+        $this->auth();
+
         $pre_result = $pre ? $pre($request) : null;
 
         $model = StoreAction::prepare($request, $this->getModelName())->except($except)->auto()->invoke();
@@ -104,9 +126,12 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
      * @throws MissingRequestFieldException
      * @throws ReflectionException
      * @throws UnhandleableRelationshipException
+     * @throws AuthorizationException
      */
     public function _update(Request $request, int $id, $except = [], callable $pre = null, callable $post = null): JsonResponse
     {
+        $this->auth();
+
         $pre_result = $pre ? $pre($request) : null;
 
         $model = UpdateAction::prepare($request, $this->getModelName(), $id)->except($except)->auto()->invoke();
@@ -391,5 +416,68 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
         }
 
         return $mapping;
+    }
+
+    /**
+     * @return array
+     */
+    protected function getRouteInfo(): array
+    {
+        preg_match(
+            "/Ciliatus\\\([A-Za-z]+)\\\Http\\\Controllers\\\([A-Za-z]+)Controller@([A-Za-z_\-]+)/",
+            Route::current()->action['controller'],
+            $matches
+        );
+
+        if (strpos($matches[3], '__') != false) $matches[3] = explode('__', $matches[3])[0];
+        return array_slice($matches, 1, 3);
+    }
+
+    /**
+     * @return string
+     */
+    protected function getController(): string
+    {
+        return explode('@', Route::current()->action['controller'])[0];
+    }
+
+    /**
+     * Maps custom controller methods to the respective permissions and merges them with default permissions
+     */
+    protected function permissionMapping(): array
+    {
+        $permission_mapping = $this->defaultPermissionMapping();
+
+        $customAction = self::getController()::customActions();
+        foreach ($customAction as $method=>$action) {
+            $permission_mapping[$method] = $permission_mapping[$action];
+        }
+
+        return $permission_mapping;
+    }
+
+    /**
+     * Returns the default mapping of controller methods to permissions.
+     *
+     * @return array
+     */
+    protected function defaultPermissionMapping(): array
+    {
+        return [
+            'index'  => 'read',
+            'show'   => 'read',
+            'store'  => 'write',
+            'update' => 'write',
+            'delete' => 'write'
+        ];
+    }
+
+    /**
+     * @return string
+     */
+    public function gate(): string
+    {
+        list($package, $model, $action) = $this->getRouteInfo();
+        return $this->permissionMapping()[$action] . '-' . strtolower($package);
     }
 }

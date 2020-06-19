@@ -6,11 +6,6 @@ interface RequestInterface
 {
 
     /**
-     * @return bool
-     */
-    public function authorize(): bool;
-
-    /**
      * @return array
      */
     public function rules(): array;
