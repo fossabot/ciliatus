@@ -3,7 +3,9 @@
 namespace Ciliatus\Automation\Http\Controllers;
 
 
-class Controller extends \Ciliatus\Api\Http\Controllers\Controller
+use Ciliatus\Api\Http\Controllers\ControllerInterface;
+
+abstract class Controller extends \Ciliatus\Api\Http\Controllers\Controller implements ControllerInterface
 {
 
     /**

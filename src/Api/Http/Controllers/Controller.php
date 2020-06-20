@@ -4,6 +4,7 @@ namespace Ciliatus\Api\Http\Controllers;
 
 use Ciliatus\Api\Exceptions\MissingRequestFieldException;
 use Ciliatus\Api\Exceptions\UnhandleableRelationshipException;
+use Ciliatus\Api\Http\Controllers\Actions\DestroyAction;
 use Ciliatus\Api\Http\Controllers\Actions\StoreAction;
 use Ciliatus\Api\Http\Controllers\Actions\UpdateAction;
 use Ciliatus\Api\Http\Requests\Request;
@@ -20,7 +21,7 @@ use Matthenning\EloquentApiFilter\Traits\FiltersEloquentApi;
 use ReflectionClass;
 use ReflectionException;
 
-class Controller extends \App\Http\Controllers\Controller implements ControllerInterface
+class Controller extends \App\Http\Controllers\Controller
 {
 
     use FiltersEloquentApi;
@@ -63,7 +64,7 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
      * @return JsonResponse
      * @throws AuthorizationException
      */
-    public function index(): JsonResponse
+    public function _index(): JsonResponse
     {
         $this->auth();
 
@@ -82,7 +83,7 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
      * @return JsonResponse
      * @throws AuthorizationException
      */
-    public function show(int $id): JsonResponse
+    public function _show(int $id): JsonResponse
     {
         $this->auth();
 
@@ -90,6 +91,27 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
         $query = $model_class_name::where('id', $id);
 
         return $this->respondFiltered($query);
+    }
+
+    /**
+     * @param Request $request
+     * @param int $id
+     * @param callable $pre Function to execute before model deletion. Parameters: Request $request
+     * @param callable $post Function to execute after model deletion. Parameters: mixed $result_of_pre_function, Request $request
+     * @return JsonResponse
+     * @throws AuthorizationException
+     */
+    public function _destroy(Request $request, int $id, callable $pre = null, callable $post = null): JsonResponse
+    {
+        $this->auth();
+
+        $pre_result = $pre ? $pre($request) : null;
+
+        DestroyAction::prepare($request, $this->getModelName(), $id)->auto()->invoke();
+
+        if ($post) $post($pre_result, $request);
+
+        return $this->respond();
     }
 
     /**
@@ -120,8 +142,8 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
      * @param Request $request
      * @param int $id
      * @param $except
-     * @param callable|null $pre
-     * @param callable|null $post
+     * @param callable $pre Function to execute before model update. Parameters: Request $request
+     * @param callable $post Function to execute after model update. Parameters: mixed $result_of_pre_function, Model $model, Request $request
      * @return JsonResponse
      * @throws MissingRequestFieldException
      * @throws ReflectionException
@@ -372,7 +394,7 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
      * @param HttpStatusCodeEnum $status
      * @return JsonResponse
      */
-    public function respond(array $data, HttpStatusCodeEnum $status = null): JsonResponse
+    public function respond(array $data = [], HttpStatusCodeEnum $status = null): JsonResponse
     {
         $status = $status ?? HttpStatusCodeEnum::OK();
         return response()->json($data)->setStatusCode($status->getValue());
@@ -464,11 +486,11 @@ class Controller extends \App\Http\Controllers\Controller implements ControllerI
     protected function defaultPermissionMapping(): array
     {
         return [
-            'index'  => 'read',
-            'show'   => 'read',
-            'store'  => 'write',
-            'update' => 'write',
-            'delete' => 'write'
+            'index'   => 'read',
+            'show'    => 'read',
+            'store'   => 'write',
+            'update'  => 'write',
+            'destroy' => 'write'
         ];
     }
 

@@ -2,7 +2,6 @@
 
 namespace Ciliatus\Core\Models;
 
-use Ciliatus\Automation\Models\ApplianceGroup;
 use Ciliatus\Automation\Traits\HasAppliancesTrait;
 use Ciliatus\Common\Models\Model;
 use Ciliatus\Monitoring\Traits\HasMonitorTrait;

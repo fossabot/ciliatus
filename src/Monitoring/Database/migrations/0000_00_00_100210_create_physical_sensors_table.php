@@ -16,8 +16,8 @@ class CreatePhysicalSensorsTable extends Migration
         Schema::create('ciliatus_monitoring__physical_sensors', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('physical_sensor_type_id');
-            $table->unsignedBigInteger('belongsToModel_id');
-            $table->string('belongsToModel_type');
+            $table->unsignedBigInteger('belongsToModel_id')->nullable();
+            $table->string('belongsToModel_type')->nullable();
 
             $table->string('name')->unique();
             $table->string('state')->nullable()->default('unknown');

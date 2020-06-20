@@ -5,11 +5,15 @@ namespace Ciliatus\Core\Http\Controllers;
 
 use Ciliatus\Api\Exceptions\MissingRequestFieldException;
 use Ciliatus\Api\Exceptions\UnhandleableRelationshipException;
+use Ciliatus\Api\Traits\UsesDefaultDestroyMethodTrait;
+use Ciliatus\Api\Traits\UsesDefaultIndexMethodTrait;
+use Ciliatus\Api\Traits\UsesDefaultShowMethodTrait;
 use Ciliatus\Automation\Models\Appliance;
 use Ciliatus\Core\Http\Requests\Request;
 use Ciliatus\Core\Http\Requests\StoreHabitatRequest;
 use Ciliatus\Core\Http\Requests\UpdateHabitatRequest;
 use Ciliatus\Core\Models\Habitat;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 use ReflectionException;
@@ -17,12 +21,17 @@ use ReflectionException;
 class HabitatController extends Controller
 {
 
+    use UsesDefaultIndexMethodTrait,
+        UsesDefaultShowMethodTrait,
+        UsesDefaultDestroyMethodTrait;
+
     /**
      * @param StoreHabitatRequest $request
      * @return JsonResponse
      * @throws MissingRequestFieldException
      * @throws UnhandleableRelationshipException
      * @throws ReflectionException
+     * @throws AuthorizationException
      */
     public function store(StoreHabitatRequest $request): JsonResponse
     {
@@ -67,6 +76,7 @@ class HabitatController extends Controller
      * @throws MissingRequestFieldException
      * @throws ReflectionException
      * @throws UnhandleableRelationshipException
+     * @throws AuthorizationException
      */
     public function update(UpdateHabitatRequest $request, int $id): JsonResponse
     {

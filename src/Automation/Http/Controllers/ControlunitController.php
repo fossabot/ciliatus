@@ -3,6 +3,11 @@
 namespace Ciliatus\Automation\Http\Controllers;
 
 use Carbon\Carbon;
+use Ciliatus\Api\Traits\UsesDefaultCreateMethodTrait;
+use Ciliatus\Api\Traits\UsesDefaultDestroyMethodTrait;
+use Ciliatus\Api\Traits\UsesDefaultIndexMethodTrait;
+use Ciliatus\Api\Traits\UsesDefaultShowMethodTrait;
+use Ciliatus\Api\Traits\UsesDefaultUpdateMethodTrait;
 use Ciliatus\Automation\Enum\WorkflowExecutionStateEnum;
 use Ciliatus\Automation\Http\Requests\ControlunitCheckinRequest;
 use Ciliatus\Automation\Http\Requests\ControlunitLogRequest;
@@ -15,11 +20,18 @@ use Ciliatus\Automation\Models\WorkflowActionExecution;
 use Ciliatus\Common\Enum\HttpStatusCodeEnum;
 use Ciliatus\Common\Exceptions\ModelNotFoundException;
 use Ciliatus\Common\Factory;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 
 class ControlunitController extends Controller
 {
+
+    use UsesDefaultCreateMethodTrait,
+        UsesDefaultIndexMethodTrait,
+        UsesDefaultShowMethodTrait,
+        UsesDefaultUpdateMethodTrait,
+        UsesDefaultDestroyMethodTrait;
 
     /**
      * Update client version and retrieve time offset between client and Ciliatus
@@ -28,9 +40,12 @@ class ControlunitController extends Controller
      * @param int $id
      * @return JsonResponse
      * @throws ModelNotFoundException
+     * @throws AuthorizationException
      */
-    public function checkin(ControlunitCheckinRequest $request, int $id): JsonResponse
+    public function checkin__update(ControlunitCheckinRequest $request, int $id): JsonResponse
     {
+        $this->auth();
+
         $controlunit = Factory::findOrFail(Controlunit::class, $id);
         $client_time = Carbon::parse($request->valid()->get('datetime'));
 
@@ -50,9 +65,12 @@ class ControlunitController extends Controller
      * @param int $id
      * @return JsonResponse
      * @throws ModelNotFoundException
+     * @throws AuthorizationException
      */
-    public function claim(int $id): JsonResponse
+    public function claim_update(int $id): JsonResponse
     {
+        $this->auth();
+
         $controlunit = Factory::findOrFail(Controlunit::class, $id);
 
         $claimed = new Collection();
@@ -76,9 +94,12 @@ class ControlunitController extends Controller
      *
      * @param int $id
      * @return JsonResponse
+     * @throws AuthorizationException
      */
-    public function start_times(int $id): JsonResponse
+    public function start_times__show(int $id): JsonResponse
     {
+        $this->auth();
+
         $controlunit = Controlunit::findOrFail($id);
 
         $result = $this->respondWithModels($controlunit->ready_claimed_executions);
@@ -95,9 +116,12 @@ class ControlunitController extends Controller
      * @param int $id
      * @return JsonResponse
      * @throws ModelNotFoundException
+     * @throws AuthorizationException
      */
-    public function config(int $id): JsonResponse
+    public function config__show(int $id): JsonResponse
     {
+        $this->auth();
+
         $controlunit = Factory::findOrFail(Controlunit::class, $id);
 
         $result = $this->respondWithData([]);
@@ -113,9 +137,12 @@ class ControlunitController extends Controller
      *
      * @param ControlunitLogRequest $request
      * @param int $id
+     * @throws AuthorizationException
      */
-    public function log(ControlunitLogRequest $request, int $id)
+    public function log__update(ControlunitLogRequest $request, int $id)
     {
+        $this->auth();
+
         $controlunit = Controlunit::findOrFail($id);
     }
 
@@ -124,9 +151,12 @@ class ControlunitController extends Controller
      * @param int $id
      * @return JsonResponse
      * @throws ModelNotFoundException
+     * @throws AuthorizationException
      */
-    public function report_appliance_state(ControlunitReportApplianceStateRequest $request, int $id): JsonResponse
+    public function report_appliance_state__update(ControlunitReportApplianceStateRequest $request, int $id): JsonResponse
     {
+        $this->auth();
+
         /** @var Controlunit $controlunit */
         $controlunit = Factory::findOrFail(Controlunit::class, $id);
         /** @var Appliance $appliance */
@@ -151,9 +181,12 @@ class ControlunitController extends Controller
      * @param int $id
      * @return JsonResponse
      * @throws ModelNotFoundException
+     * @throws AuthorizationException
      */
-    public function report_action_state(ControlunitReportActionStateRequest $request, int $id): JsonResponse
+    public function report_action_state__update(ControlunitReportActionStateRequest $request, int $id): JsonResponse
     {
+        $this->auth();
+
         /** @var Controlunit $controlunit */
         $controlunit = Factory::findOrFail(Controlunit::class, $id);
         /** @var WorkflowActionExecution $action */

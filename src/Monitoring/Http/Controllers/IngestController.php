@@ -3,6 +3,7 @@
 namespace Ciliatus\Monitoring\Http\Controllers;
 
 use Carbon\Carbon;
+use Ciliatus\Api\Traits\HasNoModelTrait;
 use Ciliatus\Common\Enum\HttpStatusCodeEnum;
 use Ciliatus\Common\Exceptions\ModelNotFoundException;
 use Ciliatus\Common\Factory;
@@ -10,18 +11,24 @@ use Ciliatus\Monitoring\Http\Requests\BatchIngestRequest;
 use Ciliatus\Monitoring\Http\Requests\IngestRequest;
 use Ciliatus\Monitoring\Models\LogicalSensor;
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 
 class IngestController extends Controller
 {
 
+    use HasNoModelTrait;
+
     /**
      * @param IngestRequest $request
      * @return JsonResponse
      * @throws ModelNotFoundException
+     * @throws AuthorizationException
      */
     public function ingest__store(IngestRequest $request): JsonResponse
     {
+        $this->auth();
+
         $logical_sensor = Factory::findOrFail(LogicalSensor::class, $request->valid()->get('logical_sensor_id'));
 
         $reading = $logical_sensor->addReading(
@@ -36,10 +43,12 @@ class IngestController extends Controller
      * @param BatchIngestRequest $request
      * @return JsonResponse
      * @throws ModelNotFoundException
-     * @throws Exception
+     * @throws AuthorizationException
      */
     public function batch_ingest__store(BatchIngestRequest $request): JsonResponse
     {
+        $this->auth();
+
         $logical_sensor = Factory::findOrFail(LogicalSensor::class,  $request->valid()->get('logical_sensor_id'));
 
         $logical_sensor->enterBatchMode();

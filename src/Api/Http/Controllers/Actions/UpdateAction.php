@@ -26,7 +26,7 @@ class UpdateAction extends Action
     public static function prepare(Request $request, string $model_name, int $id): self
     {
         $action = new self($request, $model_name);
-        $action->setId($id);
+        $action->setModel($id);
 
         return $action;
     }
@@ -63,8 +63,6 @@ class UpdateAction extends Action
      */
     protected function updateModel(): self
     {
-        $this->model = $this->model_name::find($this->id);
-
         foreach ($this->fields as $field) {
             if ($this->strict && !$this->request->has($field)) {
                 throw new MissingRequestFieldException($field);
@@ -94,30 +92,25 @@ class UpdateAction extends Action
      */
     protected function updateRelations(): self
     {
-        if (!$this->relations) return $this;
-
         // Remove related models which were not present in the update query at all
         foreach ($this->model::getRelationNames() as $name=>$relation) {
-            if ($this->relations->contains($name)) {
+            if (!$this->relations->contains($name)) {
                 switch ($relation) {
                     case 'BelongsTo':
                     case 'MorphTo':
                         $this->model->$name()->dissociate();
                         break;
+
                     case 'BelongsToMany':
-                    case 'MorphToMany':
                     case 'MorphedByMany':
-                    case 'HasOne':
-                    case 'HasMany':
-                    case 'MorphOne':
-                    case 'MorphMany':
+                    case 'MorphToMany':
                         $this->model->$name()->detach();
                         break;
-                    default:
-                        throw new UnhandleableRelationshipException($relation);
                 }
             }
         }
+
+        if (!$this->relations) return $this;
 
         // Sync relations from query
         foreach ($this->relations as $name=>$ids) {
@@ -130,30 +123,46 @@ class UpdateAction extends Action
                 case 'MorphTo':
                     $this->model->$name()->associate($ids);
                     break;
+
                 case 'BelongsToMany':
-                case 'MorphToMany':
                 case 'MorphedByMany':
-                    $this->model->$name()->detach();
-                    $this->model->$name()->attach($ids);
+                case 'MorphToMany':
+                    $this->model->$name()->sync($ids);
                     break;
+
                 case 'HasOne':
-                case 'HasMany':
                 case 'MorphOne':
-                case 'MorphMany':
-                    // Retrieve all models we need to "detach" and unset their foreign key
-                    // @TODO: There has to be a better method than this :/
-                    $related_ids = $this->model->$name()->select('id')->get();
-                    if (!is_a($related_ids, Collection::class)) $related_ids = collect($related_ids);
-                    $ids_to_remove = $related_ids->filter(fn($r) => !in_array($r->id, $ids))->pluck('id');
+                    $this->model->$name()->save($ids);
+                    break;
+
+                case 'HasMany':
+                    // Emulating a sync method by first removing and then adding related models
                     $fk = $this->model->$name()->getForeignKeyName();
-                    foreach ($ids_to_remove as $id_to_remove) {
-                        $foreign_model = $model_name::find($id_to_remove);
-                        $foreign_model->$fk = null;
-                        $foreign_model->save();
-                    }
+                    $this->model->$name->filter(function (Model $m) use ($ids) {
+                            return !in_array($m->id, $ids);
+                        })->each(function (Model $m) use ($fk) {
+                            $m->$fk = null;
+                            $m->save();
+                        });
 
                     $this->model->$name()->saveMany($models);
                     break;
+
+                case 'MorphMany':
+                    // Emulating a sync method by first removing and then adding related models
+                    $fk = $this->model->$name()->getForeignKeyName();
+                    $ft = $this->model->$name()->getMorphType();
+                    $this->model->$name->filter(function (Model $m) use ($ids) {
+                            return !in_array($m->id, $ids);
+                        })->each(function (Model $m) use ($fk, $ft) {
+                            $m->$fk = null;
+                            $m->$ft = null;
+                            $m->save();
+                        });
+
+                    $this->model->$name()->saveMany($models);
+                    break;
+
                 default:
                     throw new UnhandleableRelationshipException($relation);
             }
@@ -166,9 +175,10 @@ class UpdateAction extends Action
      * @param int $id
      * @return $this
      */
-    public function setId(int $id): self
+    public function setModel(int $id): self
     {
         $this->id = $id;
+        $this->model = $this->model_name::findOrFail($this->id);
 
         return $this;
     }
