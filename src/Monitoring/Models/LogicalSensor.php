@@ -56,9 +56,9 @@ class LogicalSensor extends Model
     }
 
     /**
-     * @return Model
+     * @return Model|null
      */
-    public function getAffectedModel(): Model
+    public function getAffectedModel(): ?Model
     {
         return $this->physical_sensor->belongsToModel;
     }
@@ -92,7 +92,7 @@ class LogicalSensor extends Model
      */
     public function queueAffectedModelRefresh(): LogicalSensor
     {
-        if (!$this->isAffectedModelRefreshQueued() && !$this->is_in_batch_mode) {
+        if (!$this->isAffectedModelRefreshQueued() && !is_null($this->getAffectedModel()) && !$this->is_in_batch_mode) {
             dispatch(new RefreshMonitorJob($this->getAffectedModel()))->onQueue('ciliatus::monitor_refresh_queue');
             dispatch(new RefreshMonitorHistoryJob($this->getAffectedModel()))->onQueue('ciliatus::monitor_history_refresh_queue');
         }
@@ -105,7 +105,7 @@ class LogicalSensor extends Model
      */
     public function isAffectedModelRefreshQueued(): bool
     {
-        return $this->getAffectedModel()->is_monitor_refresh_queued;
+        return is_null($this->getAffectedModel()) ? false : $this->getAffectedModel()->is_monitor_refresh_queued;
     }
 
     /**
